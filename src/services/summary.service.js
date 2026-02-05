@@ -1,72 +1,90 @@
-// summary.service.js
+import { calculateTrips, calculateHours } from "./calculator.js";
 
 /**
- * Construye un resumen para un período dado.
- * - NO tira errores si no hay datos.
- * - La falta de datos es un estado válido (empty = true).
- * - Funciona para pago por viajes, horas o ambos.
+ * Construye el resumen mensual según configuración real de la empresa.
+ * Siempre devuelve todas las líneas (viajes, horas, incentivo),
+ * aunque alguna no sume al total.
  */
-
 export const buildMonthlySummary = ({
   trips = [],
   hours = [],
-  payMode = {},
-  prices = {},
+  settings = {},
 }) => {
-  // Defaults seguros
   const {
-    pricePerTrip = 0,
+    payMode = {
+      byTrips: false,
+      byHours: false,
+    },
     pricePerHour = 0,
-  } = prices;
+    pricePerTrip = 0,
+    pricePerCubicMeter = 0,
+    incentives = {},
+  } = settings;
 
-  const byTrips = Boolean(payMode.byTrips);
-  const byHours = Boolean(payMode.byHours);
+  // Calculadores base
+  const tripStats = calculateTrips(trips, {
+    pricePerTrip,
+    pricePerCubicMeter,
+  });
 
-  const noTrips = !trips || trips.length === 0;
-  const noHours = !hours || hours.length === 0;
+  const hourStats = calculateHours(hours);
 
-  /**
-   * 🔴 LÓGICA CORRECTA DE "EMPTY"
-   * - Si se paga por viajes y no hay viajes → empty
-   * - Si se paga por horas y no hay horas → empty
-   * - Si se paga por ambos y faltan ambos → empty
-   *
-   * O sea: OR, no AND
-   */
-  if (
-    (byTrips && noTrips) ||
-    (byHours && noHours)
-  ) {
+  // Subtotales según lógica de negocio
+  const tripsSubtotal = payMode.byTrips ? tripStats.totalAmount : 0;
+
+  const hoursSubtotal = payMode.byHours
+    ? hourStats.totalHours * pricePerHour
+    : 0;
+
+  // Incentivo mensual (si no existe queda en 0)
+  const incentive = incentives?.bonusMonthly || 0;
+
+  // Total general
+  const total = tripsSubtotal + hoursSubtotal + incentive;
+
+  // Si no hay absolutamente nada cargado
+  const empty =
+    tripStats.totalTrips === 0 &&
+    hourStats.totalHours === 0 &&
+    incentive === 0;
+
+  if (empty) {
     return {
       empty: true,
       message: "Todavía no cargaste viajes ni horas para este período",
-      totalTrips: 0,
-      totalHours: 0,
-      totalAmount: 0,
+      trips: {
+        count: 0,
+        cubicMeters: 0,
+        subtotal: 0,
+      },
+      hours: {
+        normal: 0,
+        extra: 0,
+        subtotal: 0,
+      },
+      incentive: 0,
+      total: 0,
     };
   }
 
-  // 🧮 CÁLCULOS
-  const totalTrips = noTrips ? 0 : trips.length;
-
-  const totalHours = noHours
-    ? 0
-    : hours.reduce((acc, h) => acc + (h.hours || 0), 0);
-
-  let totalAmount = 0;
-
-  if (byTrips && !noTrips) {
-    totalAmount += totalTrips * pricePerTrip;
-  }
-
-  if (byHours && !noHours) {
-    totalAmount += totalHours * pricePerHour;
-  }
-
+  // Resumen completo
   return {
     empty: false,
-    totalTrips,
-    totalHours,
-    totalAmount,
+
+    trips: {
+      count: tripStats.totalTrips,
+      cubicMeters: tripStats.totalCubicMeters,
+      subtotal: tripStats.totalAmount, // siempre mostramos el subtotal real
+    },
+
+    hours: {
+      normal: hourStats.totalHours,
+      extra: hourStats.extraHours,
+      subtotal: hoursSubtotal,
+    },
+
+    incentive,
+
+    total,
   };
 };
