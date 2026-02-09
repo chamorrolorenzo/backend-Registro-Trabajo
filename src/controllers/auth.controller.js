@@ -1,5 +1,5 @@
 import User from "../models/User.js";
-import Company from "../models/Company.js";
+import Company from "../models/company.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { transporter } from "../utils/mailer.js";
