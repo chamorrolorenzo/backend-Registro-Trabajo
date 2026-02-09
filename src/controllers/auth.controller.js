@@ -167,7 +167,9 @@ export const forgotPassword = async (req, res) => {
     );
 
     // DEV: devolvemos link (en prod va por email)
-    const link = `http://localhost:5173/reset-password?token=${token}`;
+    const FRONT_URL = "https://backend-registro-trabajo.onrender.com";
+
+const link = `${FRONT_URL}/reset-password?token=${token}`;
 
 const info = await transporter.sendMail({
   from: `Horas Viajes <${process.env.EMAIL_USER}>`,
