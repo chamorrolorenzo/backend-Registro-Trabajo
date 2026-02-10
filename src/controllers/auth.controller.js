@@ -100,6 +100,11 @@ export const login = async (req, res) => {
   }
 };
 
+/* ME */
+export const me = async (req, res) => {
+  res.json({ ok: true });
+};
+
 /* FORGOT PASSWORD */
 export const forgotPassword = async (req, res) => {
   try {
@@ -113,7 +118,7 @@ export const forgotPassword = async (req, res) => {
       email: email.toLowerCase().trim(),
     });
 
-    // RESPUESTA INMEDIATA (nunca bloquea)
+    // Respuesta inmediata (nunca se cuelga)
     res.json({
       message: "Si el email existe, se enviará un link de recuperación",
     });
