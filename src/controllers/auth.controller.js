@@ -6,6 +6,8 @@ import { transporter } from "../utils/mailer.js";
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
+console.log("RESEND KEY:", process.env.RESEND_API_KEY);
+
 // Utils
 const capitalize = (text) =>
   text
