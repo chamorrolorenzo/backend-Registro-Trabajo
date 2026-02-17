@@ -4,6 +4,12 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Resend } from "resend";
 import { registerSchema } from "../schemas/auth.schema.js";
+import {registerSchema, loginSchema,forgotPasswordSchema,
+  resetPasswordSchema
+} from "../schemas/auth.schema.js";
+  import { loginSchema } from "../schemas/auth.schema.js";
+
+
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -69,25 +75,34 @@ export const register = async (req, res) => {
 };
 
 /* LOGIN */
-export const login = async (req, res) => {
+  export const login = async (req, res) => {
   try {
-    const { username, password } = req.body;
+    const parsed = loginSchema.safeParse(req.body);
 
-    if (!username || !password) {
-      return res.status(400).json({ message: "Faltan credenciales" });
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: parsed.error.issues[0].message,
+      });
     }
+
+    const { username, password } = parsed.data;
 
     const user = await User.findOne({
       username: username.toLowerCase().trim(),
     });
 
     if (!user) {
-      return res.status(400).json({ message: "Usuario o contraseña incorrectos" });
+      return res.status(400).json({
+        message: "Usuario o contraseña incorrectos",
+      });
     }
 
-    const ok = await bcrypt.compare(password, user.password);
-    if (!ok) {
-      return res.status(400).json({ message: "Usuario o contraseña incorrectos" });
+    const validPassword = await bcrypt.compare(password, user.password);
+
+    if (!validPassword) {
+      return res.status(400).json({
+        message: "Usuario o contraseña incorrectos",
+      });
     }
 
     const token = jwt.sign(
@@ -102,6 +117,7 @@ export const login = async (req, res) => {
     res.status(500).json({ message: "Error en login" });
   }
 };
+
 
 /* ME */
 export const me = async (req, res) => {
