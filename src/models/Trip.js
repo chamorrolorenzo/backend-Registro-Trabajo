@@ -33,4 +33,7 @@ const tripSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// 🔥 Remito único por empresa
+tripSchema.index({ remito: 1, companyId: 1 }, { unique: true });
+
 export default mongoose.model("Trip", tripSchema);

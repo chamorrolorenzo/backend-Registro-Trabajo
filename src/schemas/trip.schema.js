@@ -12,7 +12,5 @@ export const tripSchema = z.object({
     })
     .positive("Los metros cúbicos deben ser mayores a 0"),
 
-  date: z
-    .string()
-    .min(1, "Fecha requerida"),
+  date: z.string().min(1, "Fecha requerida"),
 });

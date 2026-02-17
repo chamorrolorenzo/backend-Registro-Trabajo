@@ -1,7 +1,6 @@
 import Trip from "../models/Trip.js";
 import { tripSchema } from "../schemas/trip.schema.js";
 
-
 // CREATE
 export const createTrip = async (req, res, next) => {
   try {
@@ -18,6 +17,18 @@ export const createTrip = async (req, res, next) => {
 
     const { remito, cubicMeters, date } = parsed.data;
 
+    // evitar duplicados por empresa
+    const existingTrip = await Trip.findOne({
+      remito,
+      companyId: req.user.companyId,
+    });
+
+    if (existingTrip) {
+      return res.status(400).json({
+        message: "El remito ya fue registrado",
+      });
+    }
+
     const trip = await Trip.create({
       userId: req.user.id,
       companyId: req.user.companyId,
@@ -31,7 +42,6 @@ export const createTrip = async (req, res, next) => {
     next(error);
   }
 };
-
 
 // LIST
 export const getTrips = async (req, res, next) => {
