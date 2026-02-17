@@ -1,13 +1,22 @@
 import Trip from "../models/Trip.js";
+import { tripSchema } from "../schemas/trip.schema.js";
+
 
 // CREATE
 export const createTrip = async (req, res, next) => {
   try {
-    const { remito, cubicMeters, date } = req.body;
+    const parsed = tripSchema.safeParse({
+      ...req.body,
+      cubicMeters: Number(req.body.cubicMeters),
+    });
 
-    if (!remito || cubicMeters === undefined || !date) {
-      return res.status(400).json({ message: "Faltan datos obligatorios" });
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: parsed.error.issues[0].message,
+      });
     }
+
+    const { remito, cubicMeters, date } = parsed.data;
 
     const trip = await Trip.create({
       userId: req.user.id,
@@ -22,6 +31,7 @@ export const createTrip = async (req, res, next) => {
     next(error);
   }
 };
+
 
 // LIST
 export const getTrips = async (req, res, next) => {
