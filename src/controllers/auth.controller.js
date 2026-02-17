@@ -3,6 +3,7 @@ import Company from "../models/company.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Resend } from "resend";
+import { registerSchema } from "../schemas/auth.schema.js";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -16,25 +17,27 @@ const capitalize = (text) =>
 /* REGISTER */
 export const register = async (req, res) => {
   try {
-    const { nombre, apellido, email, username, password, empresa } = req.body;
+    const parsed = registerSchema.safeParse(req.body);
 
-    if (!nombre || !apellido || !email || !username || !password || !empresa) {
-      return res.status(400).json({ message: "Faltan datos obligatorios" });
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: parsed.error.issues[0].message,
+      });
     }
 
-    if (!/^\d{4}$/.test(password)) {
-      return res.status(400).json({ message: "La contraseña debe tener 4 números" });
-    }
+    const { nombre, apellido, email, username, password, empresa } = parsed.data;
 
     const emailNormalized = email.toLowerCase().trim();
     const usernameNormalized = username.toLowerCase().trim();
 
-    const userExists = await User.findOne({
-      $or: [{ email: emailNormalized }, { username: usernameNormalized }],
-    });
+    const emailExists = await User.findOne({ email: emailNormalized });
+    if (emailExists) {
+      return res.status(400).json({ message: "El email ya está registrado" });
+    }
 
-    if (userExists) {
-      return res.status(400).json({ message: "Email o usuario ya registrado" });
+    const usernameExists = await User.findOne({ username: usernameNormalized });
+    if (usernameExists) {
+      return res.status(400).json({ message: "El usuario ya está registrado" });
     }
 
     const company = await Company.findOne({
@@ -118,7 +121,6 @@ export const forgotPassword = async (req, res) => {
       email: email.toLowerCase().trim(),
     });
 
-    // Respuesta inmediata (nunca se cuelga)
     res.json({
       message: "Si el email existe, se enviará un link de recuperación",
     });
