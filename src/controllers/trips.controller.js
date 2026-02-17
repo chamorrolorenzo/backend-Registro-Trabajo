@@ -60,6 +60,19 @@ export const getTrips = async (req, res, next) => {
 // UPDATE
 export const updateTrip = async (req, res, next) => {
   try {
+    const parsed = tripSchema.partial().safeParse({
+      ...req.body,
+      ...(req.body.cubicMeters !== undefined && {
+        cubicMeters: Number(req.body.cubicMeters),
+      }),
+    });
+
+    if (!parsed.success) {
+      return res.status(400).json({
+        message: parsed.error.issues[0].message,
+      });
+    }
+
     const { id } = req.params;
 
     const trip = await Trip.findOneAndUpdate(
@@ -68,7 +81,7 @@ export const updateTrip = async (req, res, next) => {
         userId: req.user.id,
         companyId: req.user.companyId,
       },
-      req.body,
+      parsed.data,
       { new: true }
     );
 
@@ -83,6 +96,7 @@ export const updateTrip = async (req, res, next) => {
     next(error);
   }
 };
+
 
 // DELETE
 export const deleteTrip = async (req, res, next) => {
