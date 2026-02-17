@@ -4,11 +4,12 @@ import path from "path";
 import { fileURLToPath } from "url";
 
 // Rutas
-import authRoutes from "./auth.routes.js";
-import tripsRoutes from "./trips.routes.js";
-import exportsRoutes from "./exports.routes.js";
-import summaryRoutes from "./summary.routes.js";
-import hoursRoutes from "./hours.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import tripsRoutes from "./routes/trips.routes.js";
+import exportsRoutes from "./routes/exports.routes.js";
+import summaryRoutes from "./routes/summary.routes.js";
+import hoursRoutes from "./routes/hours.routes.js";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
