@@ -1,8 +1,4 @@
 import "dotenv/config";
-
-console.log("EMAIL:", process.env.EMAIL_USER);
-console.log("PASS:", process.env.EMAIL_PASS);
-
 import app from "./app.js";
 import connectDB from "./config/Db.js";
 
