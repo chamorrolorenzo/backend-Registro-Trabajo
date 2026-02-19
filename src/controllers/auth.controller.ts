@@ -1,27 +1,28 @@
-import User from "../models/User.js";
-import Company from "../models/company.js";
+import User from "../models/User";
+import Company from "../models/company";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Resend } from "resend";
-import { registerSchema } from "../schemas/auth.schema.js";
-import {registerSchema, loginSchema,forgotPasswordSchema,
+import {
+  registerSchema,
+  loginSchema,
+  forgotPasswordSchema,
   resetPasswordSchema
-} from "../schemas/auth.schema.js";
-  import { loginSchema } from "../schemas/auth.schema.js";
-
-
+} from "../schemas/auth.schema";
+import { Request, Response } from "express";
+import { JwtPayload } from "jsonwebtoken";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Utils
-const capitalize = (text) =>
+const capitalize = (text: string) =>
   text
     .toLowerCase()
     .trim()
     .replace(/\b\w/g, (c) => c.toUpperCase());
 
 /* REGISTER */
-export const register = async (req, res) => {
+export const register = async (req: Request, res: Response) => {
   try {
     const parsed = registerSchema.safeParse(req.body);
 
@@ -75,7 +76,7 @@ export const register = async (req, res) => {
 };
 
 /* LOGIN */
-  export const login = async (req, res) => {
+  export const login = async (req: Request, res: Response) => {
   try {
     const parsed = loginSchema.safeParse(req.body);
 
@@ -106,11 +107,10 @@ export const register = async (req, res) => {
     }
 
     const token = jwt.sign(
-      { id: user._id, role: user.role, companyId: user.companyId },
-      process.env.JWT_SECRET,
-      { expiresIn: "1d" }
-    );
-
+    { id: user._id, role: user.role, companyId: user.companyId },
+    process.env.JWT_SECRET as string,
+    { expiresIn: "1d" }
+  );
     res.json({ token });
   } catch (error) {
     console.error("LOGIN ERROR:", error);
@@ -118,14 +118,13 @@ export const register = async (req, res) => {
   }
 };
 
-
 /* ME */
-export const me = async (req, res) => {
+export const me = async (req: Request, res: Response) => {
   res.json({ ok: true });
 };
 
 /* FORGOT PASSWORD */
-export const forgotPassword = async (req, res) => {
+export const forgotPassword = async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
 
@@ -143,7 +142,7 @@ export const forgotPassword = async (req, res) => {
 
     if (!user) return;
 
-    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+    const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET as string, {
       expiresIn: "15m",
     });
 
@@ -169,7 +168,7 @@ export const forgotPassword = async (req, res) => {
 };
 
 /* RESET PASSWORD */
-export const resetPassword = async (req, res) => {
+export const resetPassword = async (req: Request, res: Response) => {
   try {
     const { token, password } = req.body;
 
@@ -181,7 +180,7 @@ export const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "La contraseña debe tener 4 números" });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload & { id: string };
     const hash = await bcrypt.hash(password, 10);
 
     await User.findByIdAndUpdate(decoded.id, { password: hash });

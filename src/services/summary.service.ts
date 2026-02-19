@@ -1,14 +1,13 @@
 import { calculateTrips, calculateHours } from "./calculator.js";
 
-/**
- * Construye el resumen mensual según configuración real de la empresa.
- * Siempre devuelve todas las líneas (viajes, horas, incentivo),
- * aunque alguna no sume al total.
- */
 export const buildMonthlySummary = ({
   trips = [],
   hours = [],
   settings = {},
+}: {
+  trips: any[];
+  hours: any[];
+  settings: any;
 }) => {
   const {
     payMode = {
@@ -21,28 +20,23 @@ export const buildMonthlySummary = ({
     incentives = {},
   } = settings;
 
-  // Calculadores base
   const tripStats = calculateTrips(trips, {
     pricePerTrip,
     pricePerCubicMeter,
   });
 
-  const hourStats = calculateHours(hours);
+  const hourStats = calculateHours(hours as any []);
 
-  // Subtotales según lógica de negocio
   const tripsSubtotal = payMode.byTrips ? tripStats.totalAmount : 0;
 
   const hoursSubtotal = payMode.byHours
     ? hourStats.totalHours * pricePerHour
     : 0;
 
-  // Incentivo mensual (si no existe queda en 0)
   const incentive = incentives?.bonusMonthly || 0;
 
-  // Total general
   const total = tripsSubtotal + hoursSubtotal + incentive;
 
-  // Si no hay absolutamente nada cargado
   const empty =
     tripStats.totalTrips === 0 &&
     hourStats.totalHours === 0 &&
@@ -67,14 +61,13 @@ export const buildMonthlySummary = ({
     };
   }
 
-  // Resumen completo
   return {
     empty: false,
 
     trips: {
       count: tripStats.totalTrips,
       cubicMeters: tripStats.totalCubicMeters,
-      subtotal: tripStats.totalAmount, // siempre mostramos el subtotal real
+      subtotal: tripStats.totalAmount,
     },
 
     hours: {

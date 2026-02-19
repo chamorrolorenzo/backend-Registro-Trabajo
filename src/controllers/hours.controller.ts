@@ -1,10 +1,14 @@
 import Hour from "../models/Hour.js";
+import { Request, Response, NextFunction } from "express";
 
 /* LISTADO */
-export const getHours = async (req, res) => {
+export const getHours = async (
+  req: Request,
+  res: Response
+) => {
   const hours = await Hour.find({
-    userId: req.user.id,
-    companyId: req.user.companyId
+    userId: req.user!.id,
+    companyId: req.user!.companyId,
   }).sort({ entryTime: -1 });
 
   res.json(hours);
@@ -12,20 +16,26 @@ export const getHours = async (req, res) => {
 
 /* CRUD MANUAL */
 
-export const createHour = async (req, res) => {
+export const createHour = async (
+  req: Request,
+  res: Response
+) => {
   const hour = await Hour.create({
-    userId: req.user.id,
-    companyId: req.user.companyId,
+    userId: req.user!.id,
+    companyId: req.user!.companyId,
     date: req.body.date,
     entryTime: req.body.entryTime,
     exitTime: req.body.exitTime || null,
-    totalMinutes: req.body.totalMinutes || 0
+    totalMinutes: req.body.totalMinutes || 0,
   });
 
   res.status(201).json(hour);
 };
 
-export const updateHour = async (req, res) => {
+export const updateHour = async (
+  req: Request,
+  res: Response
+) => {
   const hour = await Hour.findById(req.params.id);
   if (!hour) return res.status(404).json({ message: "No existe" });
 
@@ -38,17 +48,23 @@ export const updateHour = async (req, res) => {
   res.json(hour);
 };
 
-export const deleteHour = async (req, res) => {
+export const deleteHour = async (
+  req: Request,
+  res: Response
+) => {
   await Hour.findByIdAndDelete(req.params.id);
   res.json({ ok: true });
 };
 
 /* AUTOMÁTICO */
 
-export const entryHour = async (req, res) => {
+export const entryHour = async (
+  req: Request,
+  res: Response
+) => {
   const open = await Hour.findOne({
-    userId: req.user.id,
-    exitTime: null
+    userId: req.user!.id,
+    exitTime: null,
   });
 
   if (open) {
@@ -58,21 +74,24 @@ export const entryHour = async (req, res) => {
   const now = new Date();
 
   const hour = await Hour.create({
-    userId: req.user.id,
-    companyId: req.user.companyId,
+    userId: req.user!.id,
+    companyId: req.user!.companyId,
     date: new Date(now.toISOString().slice(0, 10)),
     entryTime: now,
     exitTime: null,
-    totalMinutes: 0
+    totalMinutes: 0,
   });
 
   res.status(201).json(hour);
 };
 
-export const exitHour = async (req, res) => {
+export const exitHour = async (
+  req: Request,
+  res: Response
+) => {
   const open = await Hour.findOne({
-    userId: req.user.id,
-    exitTime: null
+    userId: req.user!.id,
+    exitTime: null,
   });
 
   if (!open) {
@@ -82,7 +101,9 @@ export const exitHour = async (req, res) => {
   const now = new Date();
 
   open.exitTime = now;
-  open.totalMinutes = Math.floor((now - open.entryTime) / 60000);
+  open.totalMinutes = Math.floor(
+    (now.getTime() - open.entryTime.getTime()) / 60000
+  );
 
   await open.save();
 

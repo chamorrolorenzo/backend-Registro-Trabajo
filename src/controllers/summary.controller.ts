@@ -2,11 +2,16 @@ import { buildMonthlySummary } from "../services/summary.service.js";
 import Trip from "../models/Trip.js";
 import Hour from "../models/Hour.js";
 import Company from "../models/company.js";
+import { Request, Response, NextFunction } from "express";
 
 /**
  * GET /summary?month=&year=
  */
-export const getSummary = async (req, res, next) => {
+export const getSummary = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { month, year } = req.query;
 
@@ -14,12 +19,12 @@ export const getSummary = async (req, res, next) => {
       return res.status(400).json({ message: "Month y year son requeridos" });
     }
 
-    const userId = req.user.id;
-    const companyId = req.user.companyId;
+    const userId = req.user!.id;
+    const companyId = req.user!.companyId;
 
-    const trips = await Trip.find({ userId });
-    const hours = await Hour.find({ userId });
-    const company = await Company.findById(companyId);
+    const trips = (await Trip.find({ userId }).lean()) as any[];
+    const hours = (await Hour.find({ userId }).lean()) as any[];
+    const company = await Company.findById(companyId).lean();
 
     if (!company) {
       return res.status(404).json({ message: "Empresa no encontrada" });
@@ -28,7 +33,7 @@ export const getSummary = async (req, res, next) => {
     const summary = buildMonthlySummary({
       trips,
       hours,
-      settings: company.settings,
+      settings: company.settings!,
     });
 
     res.json(summary);
@@ -42,14 +47,18 @@ export const getSummary = async (req, res, next) => {
  * GET /summary/periods
  * Devuelve solo los meses/años que tienen viajes cargados
  */
-export const getSummaryPeriods = async (req, res, next) => {
+export const getSummaryPeriods = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
-    const userId = req.user.id;
+    const userId = req.user!.id;
 
-    const trips = await Trip.find({ userId });
+    const trips = (await Trip.find({ userId }).lean()) as any[];
 
     const unique = new Set(
-      trips.map((t) => {
+      trips.map((t: any) => {
         const d = new Date(t.createdAt);
         return `${d.getMonth() + 1}-${d.getFullYear()}`;
       })

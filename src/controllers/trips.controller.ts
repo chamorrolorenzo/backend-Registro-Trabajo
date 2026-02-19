@@ -1,8 +1,13 @@
 import Trip from "../models/Trip.js";
 import { tripSchema } from "../schemas/trip.schema.js";
+import { Request, Response, NextFunction } from "express";
 
 // CREATE
-export const createTrip = async (req, res, next) => {
+export const createTrip = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const parsed = tripSchema.safeParse({
       ...req.body,
@@ -15,12 +20,11 @@ export const createTrip = async (req, res, next) => {
       });
     }
 
-    const { remito, cubicMeters, date } = parsed.data;
+    const { remito, cubicMeters } = parsed.data;
 
-    // evitar duplicados por empresa
     const existingTrip = await Trip.findOne({
       remito,
-      companyId: req.user.companyId,
+      companyId: req.user!.companyId,
     });
 
     if (existingTrip) {
@@ -30,11 +34,10 @@ export const createTrip = async (req, res, next) => {
     }
 
     const trip = await Trip.create({
-      userId: req.user.id,
-      companyId: req.user.companyId,
+      userId: req.user!.id,
+      companyId: req.user!.companyId,
       remito,
       cubicMeters,
-      date,
     });
 
     res.status(201).json(trip);
@@ -44,12 +47,16 @@ export const createTrip = async (req, res, next) => {
 };
 
 // LIST
-export const getTrips = async (req, res, next) => {
+export const getTrips = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const trips = await Trip.find({
-      userId: req.user.id,
-      companyId: req.user.companyId,
-    }).sort({ date: -1 });
+      userId: req.user!.id,
+      companyId: req.user!.companyId,
+    }).sort({ createdAt: -1 });
 
     res.json(trips);
   } catch (error) {
@@ -58,7 +65,11 @@ export const getTrips = async (req, res, next) => {
 };
 
 // UPDATE
-export const updateTrip = async (req, res, next) => {
+export const updateTrip = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const parsed = tripSchema.partial().safeParse({
       ...req.body,
@@ -78,8 +89,8 @@ export const updateTrip = async (req, res, next) => {
     const trip = await Trip.findOneAndUpdate(
       {
         _id: id,
-        userId: req.user.id,
-        companyId: req.user.companyId,
+        userId: req.user!.id,
+        companyId: req.user!.companyId,
       },
       parsed.data,
       { new: true }
@@ -97,16 +108,19 @@ export const updateTrip = async (req, res, next) => {
   }
 };
 
-
 // DELETE
-export const deleteTrip = async (req, res, next) => {
+export const deleteTrip = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { id } = req.params;
 
     const trip = await Trip.findOneAndDelete({
       _id: id,
-      userId: req.user.id,
-      companyId: req.user.companyId,
+      userId: req.user!.id,
+      companyId: req.user!.companyId,
     });
 
     if (!trip) {

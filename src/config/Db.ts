@@ -9,12 +9,17 @@ const connectDB = async () => {
   }
 
   try {
-    await mongoose.connect(MONGO_URI);
-    console.log("✅ MongoDB conectado");
-  } catch (error) {
+  await mongoose.connect(MONGO_URI);
+  console.log("✅ MongoDB conectado");
+} catch (error) {
+  if (error instanceof Error) {
     console.error("❌ Error MongoDB:", error.message);
-    process.exit(1);
+  } else {
+    console.error("❌ Error MongoDB desconocido");
   }
+  process.exit(1);
+}
+
 };
 
 export default connectDB;

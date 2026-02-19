@@ -1,7 +1,9 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import { Request, Response, NextFunction } from "express";
+import { JwtPayload } from "jsonwebtoken";
 
-const authMiddleware = async (req, res, next) => {
+const authMiddleware = async (req: Request, res: Response, next: NextFunction) =>{
   try {
     const authHeader = req.headers.authorization;
 
@@ -11,7 +13,7 @@ const authMiddleware = async (req, res, next) => {
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload & { id: string };
 
     const user = await User.findById(decoded.id);
 
@@ -21,10 +23,11 @@ const authMiddleware = async (req, res, next) => {
 
     // Identidad normalizada
     req.user = {
-      id: user._id,
-      role: user.role,
-      companyId: user.companyId,
-    };
+  id: user._id.toString(),
+  role: user.role,
+  companyId: user.companyId!.toString(),
+};
+
 
     next();
   } catch (error) {
