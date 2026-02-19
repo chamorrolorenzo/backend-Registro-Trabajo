@@ -1,5 +1,5 @@
-import User from "../models/User";
-import Company from "../models/company";
+import User from "../models/User.js";
+import Company from "../models/company.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Resend } from "resend";
