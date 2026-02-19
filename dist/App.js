@@ -28,11 +28,6 @@ app.use("/exports", exportsRoutes);
 app.use("/summary", summaryRoutes);
 /* --- Horas --- */
 app.use("/hours", hoursRoutes);
-/* ---- Frontend build (Vite dist) ---- */
-app.use(express.static(path.join(__dirname, "../dist")));
-app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "../dist/index.html"));
-});
 /* ---- Middleware de errores ---- */
 app.use((err, req, res, next) => {
     console.error(err);
