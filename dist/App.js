@@ -3,7 +3,7 @@ import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
 // Rutas
-//import authRoutes from "./routes/auth.routes.js";
+import authRoutes from "./routes/auth.routes.js";
 import tripsRoutes from "./routes/trips.routes.js";
 import hoursRoutes from "./routes/hours.routes.js";
 import exportsRoutes from "./routes/exports.routes.js";
@@ -19,7 +19,7 @@ app.use(cors({
 }));
 app.use(express.json());
 /* ---- Rutas públicas ---- */
-//app.use("/auth", authRoutes);
+app.use("/auth", authRoutes);
 /* ---- Rutas protegidas ---- */
 app.use("/trips", tripsRoutes);
 /* ---- Export excel / pdf ---- */

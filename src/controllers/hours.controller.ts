@@ -15,7 +15,6 @@ export const getHours = async (
 };
 
 /* CRUD MANUAL */
-
 export const createHour = async (
   req: Request,
   res: Response
