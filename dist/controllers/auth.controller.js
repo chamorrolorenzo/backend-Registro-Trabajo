@@ -1,9 +1,9 @@
-import User from "../models/User";
-import Company from "../models/company";
+import User from "../models/User.js";
+import Company from "../models/company.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { Resend } from "resend";
-import { registerSchema, loginSchema } from "../schemas/auth.schema";
+import { registerSchema, loginSchema } from "../schemas/auth.schema.js";
 const resend = new Resend(process.env.RESEND_API_KEY);
 // Utils
 const capitalize = (text) => text

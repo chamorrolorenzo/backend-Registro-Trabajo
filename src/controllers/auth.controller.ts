@@ -8,7 +8,7 @@ import {
   loginSchema,
   forgotPasswordSchema,
   resetPasswordSchema
-} from "../schemas/auth.schema";
+} from "../schemas/auth.schema.js";
 import { Request, Response } from "express";
 import { JwtPayload } from "jsonwebtoken";
 
