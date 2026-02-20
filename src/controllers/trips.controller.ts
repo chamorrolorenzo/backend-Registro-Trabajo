@@ -38,6 +38,7 @@ export const createTrip = async (
       companyId: req.user!.companyId,
       remito,
       cubicMeters,
+      date: new Date()
     });
 
     res.status(201).json(trip);

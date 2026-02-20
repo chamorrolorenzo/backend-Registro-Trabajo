@@ -27,6 +27,7 @@ export const createTrip = async (req, res, next) => {
             companyId: req.user.companyId,
             remito,
             cubicMeters,
+            date: new Date()
         });
         res.status(201).json(trip);
     }
