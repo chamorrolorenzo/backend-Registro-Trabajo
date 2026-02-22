@@ -121,14 +121,20 @@ export const entryHour = async (
 
     const now = new Date();
 
-    const hour = await Hour.create({
-      userId: req.user!.id,
-      companyId: req.user!.companyId,
-      date: new Date(now.toISOString().slice(0, 10)),
-      entryTime: now,
-      exitTime: null,
-      totalMinutes: 0,
-    });
+      const localDate = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate()
+    );
+    
+      const hour = await Hour.create({
+        userId: req.user!.id,
+        companyId: req.user!.companyId,
+        date: localDate,
+        entryTime: now,
+        exitTime: null,
+        totalMinutes: 0,
+      });
 
     res.status(201).json(hour);
 
