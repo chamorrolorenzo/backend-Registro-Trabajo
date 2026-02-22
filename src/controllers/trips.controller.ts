@@ -38,7 +38,7 @@ export const createTrip = async (
       companyId: req.user!.companyId,
       remito,
       cubicMeters,
-      date: new Date()
+      date: new Date(),
     });
 
     res.status(201).json(trip);
@@ -54,10 +54,32 @@ export const getTrips = async (
   next: NextFunction
 ) => {
   try {
-    const trips = await Trip.find({
+    const { remito, from, to, minCubic } = req.query;
+
+    const filter: any = {
       userId: req.user!.id,
       companyId: req.user!.companyId,
-    }).sort({ createdAt: -1 });
+    };
+
+    // Filtrar por remito (parcial)
+    if (remito && typeof remito === "string") {
+      filter.remito = new RegExp(remito, "i");
+    }
+
+    // Filtrar por rango de fechas
+    if (from && to && typeof from === "string" && typeof to === "string") {
+      filter.date = {
+        $gte: new Date(from),
+        $lte: new Date(to),
+      };
+    }
+
+    // Filtrar por mínimo de metros cúbicos
+    if (minCubic && typeof minCubic === "string") {
+      filter.cubicMeters = { $gte: Number(minCubic) };
+    }
+
+    const trips = await Trip.find(filter).sort({ createdAt: -1 });
 
     res.json(trips);
   } catch (error) {
