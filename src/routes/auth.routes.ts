@@ -23,11 +23,9 @@ router.get("/me", authMiddleware, me);
 router.post("/forgot-password", forgotPassword);
 router.post("/reset-password", resetPassword);
 
-/* =========================
-   USERS CRUD (DEBUG / ADMIN)
-========================= */
+// USERS CRUD 
 
-/* GET ALL USERS */
+/* GET USERS */
 router.get("/users", async (req, res) => {
   try {
     const users = await User.find().select("-password");
@@ -35,20 +33,6 @@ router.get("/users", async (req, res) => {
   } catch (error) {
     console.error("GET USERS ERROR:", error);
     res.status(500).json({ message: "Error obteniendo usuarios" });
-  }
-});
-
-/* GET ONE USER */
-router.get("/users/:id", async (req, res) => {
-  try {
-    const user = await User.findById(req.params.id).select("-password");
-    if (!user) {
-      return res.status(404).json({ message: "Usuario no encontrado" });
-    }
-    res.json(user);
-  } catch (error) {
-    console.error("GET USER ERROR:", error);
-    res.status(500).json({ message: "Error obteniendo usuario" });
   }
 });
 

@@ -1,0 +1,30 @@
+### Users - Register
+POST http://localhost:3002/auth/register
+Content-Type: application/json
+
+{
+  "nombre": "Juan",
+  "apellido": "Perez",
+  "username": "juanperez",
+  "email": "juan@email.com",
+  "password": "1234",
+  "empresa": "Vial Jaime"
+}
+
+### Users - Get All
+GET http://localhost:3002/auth/users
+Authorization: Bearer TU_TOKEN
+Content-Type: application/json
+
+### Users - Update
+PUT http://localhost:3002/auth/users/ _ID
+Authorization: Bearer TU_TOKEN
+Content-Type: application/json
+
+{
+  "role": "ADMIN"
+}
+
+### Users - Delete
+DELETE http://localhost:3002/auth/users/ _ID
+Authorization: Bearer TU_TOKEN

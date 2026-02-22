@@ -9,6 +9,7 @@ export const getHours = async (req, res) => {
 };
 /* CRUD MANUAL */
 export const createHour = async (req, res) => {
+    console.log("BODY:", req.body);
     const hour = await Hour.create({
         userId: req.user.id,
         companyId: req.user.companyId,

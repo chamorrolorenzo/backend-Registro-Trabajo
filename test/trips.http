@@ -1,0 +1,25 @@
+### Trips - Create
+POST http://localhost:3002/trips
+Content-Type: application/json
+Authorization: Bearer TU_TOKEN
+
+{
+  "remito": "111111",
+  "cubicMeters": 15
+}
+
+### Trips - Get All
+GET http://localhost:3002/trips
+Authorization: Bearer TU_TOKEN
+
+### Trips - Update
+PATCH http://localhost:3002/trips/ TU _ID
+Content-Type: application/json
+Authorization: Bearer TU_TOKEN
+{
+  "cubicMeters": 20
+}
+
+### Trips - Delete
+DELETE http://localhost:3002/trips/ TU _ID
+Authorization: Bearer TU_TOKEN

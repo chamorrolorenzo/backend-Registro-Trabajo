@@ -1,64 +1,180 @@
-# 📘 Registro de Trabajo – Backend API
+# Registro de Trabajo – Backend API
 
-## 📌 Introducción
+## Descripción
 
-**Registro de Trabajo** es una API REST desarrollada con **Node.js, Express y MongoDB**, cuyo objetivo es permitir el registro, consulta, modificación y eliminación de información relacionada con **horas trabajadas** y **viajes realizados** por usuarios autenticados.
+Registro de Trabajo es una API REST desarrollada con Node.js, Express y MongoDB.  
+Permite registrar, consultar, modificar y eliminar viajes y horas trabajadas por usuarios autenticados.
 
-El sistema implementa operaciones **CRUD completas (Create, Read, Update, Delete)** sobre entidades protegidas, aplicando autenticación segura mediante **JSON Web Tokens (JWT)** y siguiendo el patrón de arquitectura **MVC (Modelo – Controlador – Rutas)**.
+La API implementa:
 
-Cada usuario autenticado solo puede operar sobre sus propios registros, garantizando control de acceso y seguridad desde el backend.
+- Autenticación con JWT
+- Protección de rutas
+- CRUD completo
+- Arquitectura MVC
+- Manejo centralizado de errores
 
+Cada usuario autenticado solo puede operar sobre sus propios registros.
 ---
 
-##  Objetivos del proyecto
+## Tecnologías utilizadas
 
-### Objetivo general
-Desarrollar una API REST segura y modular que implemente operaciones CRUD completas sobre entidades asociadas a usuarios autenticados.
-
-### Objetivos específicos
-- Integrar **Express** con **MongoDB** utilizando **Mongoose**.
-- Implementar autenticación segura con **JWT** y encriptación de contraseñas con **bcrypt**.
-- Aplicar correctamente el patrón de arquitectura **MVC**.
-- Desarrollar endpoints públicos y privados.
-- Implementar **CRUD completo** sobre entidades protegidas.
-- Proteger los recursos según el usuario autenticado.
-- Centralizar el manejo de errores mediante middleware.
-- Documentar correctamente la API y su funcionamiento.
-
+- Node.js
+- Express
+- MongoDB
+- Mongoose
+- JSON Web Tokens (JWT)
+- bcrypt
+- dotenv
+- cors
+- ZOD
 ---
 
-##  Tecnologías utilizadas
+## Validación y manejo de errores
 
-- **Node.js** – Entorno de ejecución JavaScript.
-- **Express** – Framework para la creación de APIs REST.
-- **MongoDB** – Base de datos NoSQL.
-- **Mongoose** – ODM para modelado y validación de datos.
-- **JSON Web Tokens (JWT)** – Autenticación basada en tokens.
-- **bcrypt** – Hashing de contraseñas.
-- **dotenv** – Manejo de variables de entorno.
-- **cors** – Control de acceso.
-- **Thunder Client** – Testing de endpoints.
+La API utiliza Zod para validar los datos de entrada en los endpoints.
+Si los datos no cumplen el esquema definido, se devuelve un error 400 con el detalle correspondiente.
 
----
+El manejo de errores está centralizado mediante un middleware global.
 
-##  Arquitectura 
+## Arquitectura
 
-El proyecto sigue el patrón **MVC**, separando responsabilidades de la siguiente manera:
+El proyecto sigue el patrón MVC:
 
-- **Modelos**: Definen la estructura de los datos y validaciones.
-- **Controladores**: Implementan la lógica de negocio y las operaciones CRUD.
-- **Rutas**: Exponen los endpoints HTTP.
-- **Middlewares**: Manejan autenticación, autorización y errores.
+- models → estructura y validación de datos
+- controllers → lógica de negocio
+- routes → definición de endpoints
+- middlewares → autenticación y manejo de errores
 
-### Estructura de carpetas
-
-```txt
+Estructura del proyecto:
+```
 src/
-├── config/          # Configuración de MongoDB
-├── models/          # Modelos de Mongoose (User, Company, Hour, Trip)
-├── controllers/     # Lógica de negocio y CRUD
-├── routes/          # Endpoints de la API
-├── services/        # Lógica reutilizable
-├── middlewares/     # Autenticación y manejo de errores
-├── app.js           # Configuración principal de Express
-└── index.js         # Punto de entrada del servidor
+├── config/
+├── models/
+├── controllers/
+├── routes/
+├── services/
+├── middlewares/
+├── app.js
+└── index.js
+```
+---
+
+# Instalación
+
+## Requisitos
+
+- Node.js instalado
+- MongoDB local o MongoDB Atlas
+---
+
+## Paso 1 – Instalar dependencias
+
+```bash
+npm install
+```
+---
+
+## Paso 2 – Crear archivo .env
+
+Crear un archivo `.env` en la raíz del proyecto con el siguiente contenido:
+
+```env
+PORT=3002
+MONGO_URI=TU_URI_DE_MONGO
+JWT_SECRET=TU_CLAVE_SECRETA
+```
+---
+
+## Paso 3 – Levantar el servidor
+
+```bash
+npm run dev
+```
+
+El servidor quedará disponible en:
+
+```
+http://localhost:3002
+```
+
+---
+
+# Autenticación
+
+Antes de utilizar cualquier ruta protegida es necesario realizar login.
+
+## Login
+
+Endpoint:
+
+```
+POST /auth/login
+```
+
+Body:
+
+```json
+{
+  "usuario": "TU_USUARIO",
+  "password": "TU_PASSWORD"
+}
+```
+
+Respuesta esperada:
+
+```json
+{
+  "token": "JWT_TOKEN"
+}
+```
+
+Copiar el token.
+
+Todas las rutas protegidas requieren el siguiente header:
+
+```
+Authorization: Bearer JWT_TOKEN
+```
+
+# Cómo probar el CRUD
+
+El CRUD puede probarse utilizando cualquier cliente HTTP (Thunder, Postman, Bruno, etc.).
+
+Además, el proyecto incluye archivos: test/trips, test/hours, test/users.
+---
+
+# Cómo probar el sistema
+
+1. Levantar el backend con `npm run dev`
+2. Realizar login en `/auth/login`
+3. Copiar el token
+4. Enviar el header `Authorization: Bearer TOKEN`
+5. Ejecutar las operaciones CRUD
+
+Puede probarse con:
+
+- Thunder Client
+- Postman
+- Bruno
+- curl
+
+El proyecto incluye opcionalmente una carpeta `/tests` con archivos `.http` para ejecutar requests desde VSCode usando REST Client.
+
+---
+
+# Resultado final
+
+El sistema implementa correctamente:
+
+- Autenticación JWT
+- Protección de rutas por usuario
+- CRUD completo en Trips, Hours y Users
+- Persistencia en MongoDB
+- Arquitectura MVC
+- Manejo centralizado de errores
+
+Todos los endpoints fueron verificados localmente.
+
+---
+
+Trabajo práctico final.

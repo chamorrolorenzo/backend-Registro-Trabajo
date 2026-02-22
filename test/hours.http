@@ -1,0 +1,37 @@
+### Hours - Create
+POST http://localhost:3002/hours
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5N2ZhN2IyNGYzODMwYzBkOTk5OGE4ZCIsInJvbGUiOiJFTVBMT1lFRSIsImNvbXBhbnlJZCI6IjY5N2ZhMWI1MjQ2ODM4MmM1MjRiNzU0MiIsImlhdCI6MTc3MTcxMTE4NCwiZXhwIjoxNzcxNzk3NTg0fQ.cy3WkkGZ_rhYEXUaYcFmJ_P7hHK3Vi5QDZj-xpkMWyI
+Content-Type: application/json
+
+{
+  "date": "2026-02-21",
+  "entryTime": "2026-02-21T08:00:00.000Z",
+  "exitTime": "2026-02-21T16:00:00.000Z"
+}
+
+###
+
+### Hours - Get All
+GET http://localhost:3002/hours
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5N2ZhN2IyNGYzODMwYzBkOTk5OGE4ZCIsInJvbGUiOiJFTVBMT1lFRSIsImNvbXBhbnlJZCI6IjY5N2ZhMWI1MjQ2ODM4MmM1MjRiNzU0MiIsImlhdCI6MTc3MTcxMTE4NCwiZXhwIjoxNzcxNzk3NTg0fQ.cy3WkkGZ_rhYEXUaYcFmJ_P7hHK3Vi5QDZj-xpkMWyI
+Content-Type: application/json
+
+
+###
+
+### Hours - Update
+PATCH http://localhost:3002/hours/699a435a1b487c69e7199d4f
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5N2ZhN2IyNGYzODMwYzBkOTk5OGE4ZCIsInJvbGUiOiJFTVBMT1lFRSIsImNvbXBhbnlJZCI6IjY5N2ZhMWI1MjQ2ODM4MmM1MjRiNzU0MiIsImlhdCI6MTc3MTcxMTE4NCwiZXhwIjoxNzcxNzk3NTg0fQ.cy3WkkGZ_rhYEXUaYcFmJ_P7hHK3Vi5QDZj-xpkMWyI
+Content-Type: application/json
+
+
+{
+  "exitTime": "2026-02-21T20:00:00.000Z"
+}
+
+###
+
+### Hours - Delete
+DELETE http://localhost:3002/hours/699a435a1b487c69e7199d4f
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5N2ZhN2IyNGYzODMwYzBkOTk5OGE4ZCIsInJvbGUiOiJFTVBMT1lFRSIsImNvbXBhbnlJZCI6IjY5N2ZhMWI1MjQ2ODM4MmM1MjRiNzU0MiIsImlhdCI6MTc3MTcxMTE4NCwiZXhwIjoxNzcxNzk3NTg0fQ.cy3WkkGZ_rhYEXUaYcFmJ_P7hHK3Vi5QDZj-xpkMWyI
+Content-Type: application/json
