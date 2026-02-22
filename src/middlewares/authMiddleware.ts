@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import User from "../models/User.js";
 import { Request, Response, NextFunction } from "express";
-import { JwtPayload } from "jsonwebtoken";
+import { IPayload } from "../interfaces/interface.payload";
 
 const authMiddleware = async (req: Request, res: Response, next: NextFunction) =>{
   try {
@@ -13,8 +13,7 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload & { id: string };
-
+    const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as IPayload;
     const user = await User.findById(decoded.id);
 
     if (!user) {
@@ -23,11 +22,10 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
 
     // Identidad normalizada
     req.user = {
-  id: user._id.toString(),
-  role: user.role,
-  companyId: user.companyId!.toString(),
-};
-
+      id: user._id.toString(),
+      role: user.role,
+      companyId: user.companyId!.toString(),
+    };
 
     next();
   } catch (error) {
