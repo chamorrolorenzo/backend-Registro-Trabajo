@@ -2,7 +2,7 @@ import Hour from "../models/Hour.js";
 import { Request, Response, NextFunction } from "express";
 import { hourSchema } from "../schemas/hour.schema.js";
 
-/* GET HOURSS */
+/* GET HOURS */
 export const getHours = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const { from, to, username } = req.query;
@@ -12,7 +12,7 @@ export const getHours = async (req: Request, res: Response, next: NextFunction) 
       companyId: req.user!.companyId,
     };
 
-    // Filtrar por rango de fechas
+    // Filtro por rango de fechas
     if (from && to && typeof from === "string" && typeof to === "string") {
       filter.date = {
         $gte: new Date(from),
@@ -20,7 +20,7 @@ export const getHours = async (req: Request, res: Response, next: NextFunction) 
       };
     }
 
-    // Filtrar por username (si lo quieres)
+    // Filtro opcional por username
     if (username && typeof username === "string") {
       filter.username = new RegExp(username, "i");
     }
@@ -50,14 +50,13 @@ export const createHour = async (req: Request, res: Response, next: NextFunction
     const hour = await Hour.create({
       userId: req.user!.id,
       companyId: req.user!.companyId,
-      date,  // Usamos date desde parsed.data
+      date,
       entryTime,
-      exitTime: exitTime || null,
-      totalMinutes: totalMinutes || 0,
+      exitTime: exitTime ?? null,
+      totalMinutes: totalMinutes ?? 0,
     });
 
     res.status(201).json(hour);
-
   } catch (error) {
     next(error);
   }
@@ -75,6 +74,7 @@ export const updateHour = async (
       return res.status(404).json({ message: "No existe" });
     }
 
+    // Seguridad
     delete req.body.userId;
     delete req.body.companyId;
 
@@ -82,7 +82,6 @@ export const updateHour = async (
     await hour.save();
 
     res.json(hour);
-
   } catch (error) {
     next(error);
   }
@@ -96,7 +95,6 @@ export const deleteHour = async (
   try {
     await Hour.findByIdAndDelete(req.params.id);
     res.json({ ok: true });
-
   } catch (error) {
     next(error);
   }
@@ -104,6 +102,7 @@ export const deleteHour = async (
 
 /* AUTOMÁTICO */
 
+/* ENTRADA */
 export const entryHour = async (
   req: Request,
   res: Response,
@@ -112,6 +111,7 @@ export const entryHour = async (
   try {
     const open = await Hour.findOne({
       userId: req.user!.id,
+      companyId: req.user!.companyId,
       exitTime: null,
     });
 
@@ -119,30 +119,28 @@ export const entryHour = async (
       return res.status(400).json({ message: "Ya hay jornada abierta" });
     }
 
-    const now = new Date();
+  const now = new Date();
 
-      const localDate = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate()
-    );
-    
-      const hour = await Hour.create({
-        userId: req.user!.id,
-        companyId: req.user!.companyId,
-        date: localDate,
-        entryTime: now,
-        exitTime: null,
-        totalMinutes: 0,
-      });
+  const date = new Date(
+    now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" })
+  );
 
-    res.status(201).json(hour);
+date.setHours(0, 0, 0, 0);
+  const hour = await Hour.create({
+    userId: req.user!.id,
+    companyId: req.user!.companyId,
+    entryTime: now,
+    exitTime: null,
+    totalMinutes: 0,
+  });
 
+  res.status(201).json(hour);
   } catch (error) {
     next(error);
   }
 };
 
+/* SALIDA */
 export const exitHour = async (
   req: Request,
   res: Response,
@@ -151,6 +149,7 @@ export const exitHour = async (
   try {
     const open = await Hour.findOne({
       userId: req.user!.id,
+      companyId: req.user!.companyId,
       exitTime: null,
     });
 
@@ -168,7 +167,6 @@ export const exitHour = async (
     await open.save();
 
     res.json(open);
-
   } catch (error) {
     next(error);
   }

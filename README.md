@@ -23,7 +23,7 @@ Cada usuario autenticado solo puede operar sobre sus propios registros.
 - MongoDB
 - Mongoose
 - JSON Web Tokens (JWT)
-- bcrypt
+- bcryptjs
 - dotenv
 - cors
 - ZOD
@@ -79,6 +79,7 @@ src/
 ## Paso 2 – Crear archivo .env
 
 Crear un archivo `.env` en la raíz del proyecto con el siguiente contenido:
+```env
 PORT=3002
 MONGO_URI=TU_URI_DE_MONGO
 JWT_SECRET=TU_CLAVE_SECRETA
@@ -176,10 +177,30 @@ Esto permite:
 - Consultas más eficientes
 - Mayor flexibilidad sin crear nuevos endpoints
 
+### Ejemplo de uso de Query Params
+
+Filtrar horas trabajadas por rango de fechas:
+GET /hours?from=2026-01-01&to=2026-01-31
+Este request devuelve únicamente los registros comprendidos dentro del período indicado.
+También es posible combinar parámetros para realizar búsquedas más específicas sin crear nuevos endpoints, aprovechando el filtrado dinámico implementado en el backend.
+
 # Cómo probar el CRUD
 
 El CRUD puede probarse utilizando cualquier cliente HTTP (Thunder, Postman, Bruno, etc.).
 Además, el proyecto incluye archivos: test/trips, test/hours, test/users.
+
+---
+
+## Carpeta /test
+
+El proyecto incluye una carpeta `/test` con archivos `.http` para probar los endpoints directamente desde VSCode (usando la extensión REST Client) o como referencia para otros clientes HTTP.
+
+Contiene:
+- users.http → registro y login de usuarios  
+- hours.http → operaciones CRUD sobre horas trabajadas  
+- trips.http → operaciones CRUD sobre viajes  
+
+Estos archivos permiten ejecutar requests rápidamente sin necesidad de Postman o Bruno, facilitando el testing manual de la API durante el desarrollo.
 
 ---
 
@@ -197,8 +218,6 @@ Puede probarse con:
 - Bruno
 - curl
 
-El proyecto incluye opcionalmente una carpeta `/tests` con archivos `.http` para ejecutar requests desde VSCode usando REST Client.
-
 ---
 
 # Resultado final
@@ -206,7 +225,7 @@ El proyecto incluye opcionalmente una carpeta `/tests` con archivos `.http` para
 El sistema implementa correctamente:
 - Autenticación JWT
 - Protección de rutas por usuario
-- CRUD completo en Trips, Hours y Users
+- CRUD completo
 - Persistencia en MongoDB
 - Arquitectura MVC
 - Manejo centralizado de errores
