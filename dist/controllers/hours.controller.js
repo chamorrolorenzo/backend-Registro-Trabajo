@@ -1,5 +1,6 @@
 import Hour from "../models/Hour.js";
 import { hourSchema } from "../schemas/hour.schema.js";
+
 /* GET HOURS */
 export const getHours = async (req, res, next) => {
     try {
@@ -51,33 +52,49 @@ export const createHour = async (req, res, next) => {
     }
 };
 export const updateHour = async (req, res, next) => {
-    try {
-        const hour = await Hour.findById(req.params.id);
-        if (!hour) {
-            return res.status(404).json({ message: "No existe" });
-        }
-        // Seguridad
-        delete req.body.userId;
-        delete req.body.companyId;
-        Object.assign(hour, req.body);
-        await hour.save();
-        res.json(hour);
+  try {
+    const hour = await Hour.findOne({
+      _id: req.params.id,
+      userId: req.user.id,
+      companyId: req.user.companyId,
+    });
+
+    if (!hour) {
+      return res.status(404).json({ message: "Registro no encontrado" });
     }
-    catch (error) {
-        next(error);
-    }
+
+    // Evitar que modifiquen identidad
+    delete req.body.userId;
+    delete req.body.companyId;
+
+    Object.assign(hour, req.body);
+    await hour.save();
+
+    res.json(hour);
+  } catch (error) {
+    next(error);
+  }
 };
+
 export const deleteHour = async (req, res, next) => {
-    try {
-        await Hour.findByIdAndDelete(req.params.id);
-        res.json({ ok: true });
+  try {
+    const deleted = await Hour.findOneAndDelete({
+      _id: req.params.id,
+      userId: req.user.id,
+      companyId: req.user.companyId,
+    });
+
+    if (!deleted) {
+      return res.status(404).json({ message: "Registro no encontrado" });
     }
-    catch (error) {
-        next(error);
-    }
+
+    res.json({ ok: true });
+  } catch (error) {
+    next(error);
+  }
 };
-/* AUTOMÁTICO */
-/* ENTRADA */
+
+/* ENTRADA  AUTOMÁTICa */
 export const entryHour = async (req, res, next) => {
     try {
         const open = await Hour.findOne({
@@ -89,11 +106,13 @@ export const entryHour = async (req, res, next) => {
             return res.status(400).json({ message: "Ya hay jornada abierta" });
         }
         const now = new Date();
+        // Fecha normalizada Argentina
         const date = new Date(now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" }));
         date.setHours(0, 0, 0, 0);
         const hour = await Hour.create({
             userId: req.user.id,
             companyId: req.user.companyId,
+            date: date, // 🔥 ESTO FALTABA
             entryTime: now,
             exitTime: null,
             totalMinutes: 0,

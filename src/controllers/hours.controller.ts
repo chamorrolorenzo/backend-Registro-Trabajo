@@ -119,22 +119,24 @@ export const entryHour = async (
       return res.status(400).json({ message: "Ya hay jornada abierta" });
     }
 
-  const now = new Date();
+    const now = new Date();
 
-  const date = new Date(
-    now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" })
-  );
+    // Fecha normalizada Argentina
+    const date = new Date(
+      now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" })
+    );
+    date.setHours(0, 0, 0, 0);
 
-date.setHours(0, 0, 0, 0);
-  const hour = await Hour.create({
-    userId: req.user!.id,
-    companyId: req.user!.companyId,
-    entryTime: now,
-    exitTime: null,
-    totalMinutes: 0,
-  });
+    const hour = await Hour.create({
+      userId: req.user!.id,
+      companyId: req.user!.companyId,
+      date: date, // 🔥 ESTO FALTABA
+      entryTime: now,
+      exitTime: null,
+      totalMinutes: 0,
+    });
 
-  res.status(201).json(hour);
+    res.status(201).json(hour);
   } catch (error) {
     next(error);
   }
