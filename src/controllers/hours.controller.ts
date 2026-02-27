@@ -100,14 +100,14 @@ export const deleteHour = async (
   }
 };
 
-/* AUTOMÁTICO */
 
-/* ENTRADA */
+
+/* ENTRADA AUTOMÁTICA */
 export const entryHour = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
     const open = await Hour.findOne({
       userId: req.user!.id,
@@ -116,27 +116,29 @@ export const entryHour = async (
     });
 
     if (open) {
-      return res.status(400).json({ message: "Ya hay jornada abierta" });
+      res.status(400).json({ message: "Ya hay jornada abierta" });
+      return;
     }
 
     const now = new Date();
 
-    // Fecha normalizada Argentina
     const date = new Date(
-      now.toLocaleString("en-US", { timeZone: "America/Argentina/Buenos_Aires" })
+      now.getFullYear(),
+      now.getMonth(),
+      now.getDate()
     );
-    date.setHours(0, 0, 0, 0);
 
     const hour = await Hour.create({
       userId: req.user!.id,
       companyId: req.user!.companyId,
-      date: date, // 🔥 ESTO FALTABA
+      date,
       entryTime: now,
       exitTime: null,
       totalMinutes: 0,
     });
 
     res.status(201).json(hour);
+
   } catch (error) {
     next(error);
   }
