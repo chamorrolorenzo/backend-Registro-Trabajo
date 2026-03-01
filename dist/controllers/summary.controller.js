@@ -13,9 +13,22 @@ export const getSummary = async (req, res, next) => {
         }
         const userId = req.user.id;
         const companyId = req.user.companyId;
-        const trips = (await Trip.find({ userId }).lean());
-        const hours = (await Hour.find({ userId }).lean());
         const company = await Company.findById(companyId).lean();
+        const m = Number(month);
+        const y = Number(year);
+        // ⭐ rango del mes
+        const start = new Date(y, m - 1, 1);
+        const end = new Date(y, m, 0, 23, 59, 59, 999);
+        const trips = (await Trip.find({
+            userId,
+            companyId,
+            date: { $gte: start, $lte: end },
+        }).lean());
+        const hours = (await Hour.find({
+            userId,
+            companyId,
+            date: { $gte: start, $lte: end },
+        }).lean());
         if (!company) {
             return res.status(404).json({ message: "Empresa no encontrada" });
         }
@@ -40,7 +53,7 @@ export const getSummaryPeriods = async (req, res, next) => {
         const userId = req.user.id;
         const trips = (await Trip.find({ userId }).lean());
         const unique = new Set(trips.map((t) => {
-            const d = new Date(t.date);
+            const d = new Date(t.createdAt);
             return `${d.getMonth() + 1}-${d.getFullYear()}`;
         }));
         const periods = [...unique].map((p) => {

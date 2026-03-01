@@ -54,32 +54,53 @@ export const getTrips = async (
   next: NextFunction
 ) => {
   try {
-    const { remito, from, to, minCubic } = req.query;
+    const { remito, from, to, minCubic, month, year } = req.query;
 
     const filter: any = {
       userId: req.user!.id,
       companyId: req.user!.companyId,
     };
 
-    // Filtrar por remito (parcial)
+    // ✅ filtro por remito
     if (remito && typeof remito === "string") {
       filter.remito = new RegExp(remito, "i");
     }
 
-    // Filtrar por rango de fechas
-    if (from && to && typeof from === "string" && typeof to === "string") {
+    // ⭐ PRIORIDAD 1 — filtro por MES (lo que usa el frontend)
+    if (
+      month &&
+      year &&
+      typeof month === "string" &&
+      typeof year === "string"
+    ) {
+      const start = new Date(Number(year), Number(month) - 1, 1);
+      const end = new Date(Number(year), Number(month), 1);
+
+      filter.date = {
+        $gte: start,
+        $lt: end,
+      };
+    }
+
+    // ⭐ PRIORIDAD 2 — filtro manual por rango
+    else if (
+      from &&
+      to &&
+      typeof from === "string" &&
+      typeof to === "string"
+    ) {
       filter.date = {
         $gte: new Date(from),
         $lte: new Date(to),
       };
     }
 
-    // Filtrar por mínimo de metros cúbicos
+    // ✅ filtro metros cúbicos
     if (minCubic && typeof minCubic === "string") {
       filter.cubicMeters = { $gte: Number(minCubic) };
     }
 
-    const trips = await Trip.find(filter).sort({ createdAt: -1 });
+    const trips = await Trip.find(filter).sort({ date: -1 });
 
     res.json(trips);
   } catch (error) {
