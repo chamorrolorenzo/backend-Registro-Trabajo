@@ -175,3 +175,31 @@ export const exitHour = async (
     next(error);
   }
 };
+export const getHoursStatus = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const record = await Hour.findOne({
+      userId: (req as any).user.id,
+      companyId: (req as any).user.companyId,
+      date: { $gte: today },
+    });
+
+    res.json({
+      hasEntry: !!record?.entryTime,
+      hasExit: !!record?.exitTime,
+    });
+
+  } catch (error) {
+    console.error("GET HOURS STATUS ERROR:", error);
+    res.status(500).json({
+      message: "Error getting hours status",
+      error: (error as any)?.message
+    });
+  }
+}
