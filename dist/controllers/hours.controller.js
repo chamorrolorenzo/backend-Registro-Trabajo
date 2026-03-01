@@ -125,3 +125,24 @@ export const exitHour = async (req, res, next) => {
         next(error);
     }
 };
+   export const getHoursStatus = async (req, res, next) => {
+       try {
+           const open = await Hour.findOne({
+               userId: req.user.id,
+               companyId: req.user.companyId,
+               exitTime: null,
+           });
+
+           res.json({
+               hasEntry: !!open,
+               hasExit: false,
+           });
+
+       } catch (error) {
+        console.error("GET HOURS STATUS ERROR:", error);
+        res.status(500).json({
+            message: "Error getting hours status",
+            error: error?.message
+        });
+    }
+};
