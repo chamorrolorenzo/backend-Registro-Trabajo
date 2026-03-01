@@ -40,7 +40,7 @@ export const getSummaryPeriods = async (req, res, next) => {
         const userId = req.user.id;
         const trips = (await Trip.find({ userId }).lean());
         const unique = new Set(trips.map((t) => {
-            const d = new Date(t.createdAt);
+            const d = new Date(t.date);
             return `${d.getMonth() + 1}-${d.getFullYear()}`;
         }));
         const periods = [...unique].map((p) => {

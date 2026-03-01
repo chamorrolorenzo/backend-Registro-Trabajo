@@ -22,9 +22,26 @@ export const getSummary = async (
     const userId = req.user!.id;
     const companyId = req.user!.companyId;
 
-    const trips = (await Trip.find({ userId }).lean()) as any[];
-    const hours = (await Hour.find({ userId }).lean()) as any[];
     const company = await Company.findById(companyId).lean();
+
+    const m = Number(month);
+const y = Number(year);
+
+// ⭐ rango del mes
+const start = new Date(y, m - 1, 1);
+const end = new Date(y, m, 0, 23, 59, 59, 999);
+
+const trips = (await Trip.find({
+  userId,
+  companyId,
+  date: { $gte: start, $lte: end },
+}).lean()) as any[];
+
+const hours = (await Hour.find({
+  userId,
+  companyId,
+  date: { $gte: start, $lte: end },
+}).lean()) as any[];
 
     if (!company) {
       return res.status(404).json({ message: "Empresa no encontrada" });
