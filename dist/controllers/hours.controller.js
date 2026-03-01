@@ -89,7 +89,11 @@ export const entryHour = async (req, res, next) => {
             return;
         }
         const now = new Date();
-        const date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        // ⭐ convertir a horario Argentina
+        const argentinaNow = new Date(now.toLocaleString("en-US", {
+            timeZone: "America/Argentina/Buenos_Aires",
+        }));
+        const date = new Date(argentinaNow.getFullYear(), argentinaNow.getMonth(), argentinaNow.getDate());
         const hour = await Hour.create({
             userId: req.user.id,
             companyId: req.user.companyId,

@@ -120,12 +120,19 @@ export const entryHour = async (
       return;
     }
 
-    const now = new Date();
+   const now = new Date();
+
+    // ⭐ convertir a horario Argentina
+    const argentinaNow = new Date(
+      now.toLocaleString("en-US", {
+        timeZone: "America/Argentina/Buenos_Aires",
+      })
+    );
 
     const date = new Date(
-      now.getFullYear(),
-      now.getMonth(),
-      now.getDate()
+      argentinaNow.getFullYear(),
+      argentinaNow.getMonth(),
+      argentinaNow.getDate()
     );
 
     const hour = await Hour.create({
