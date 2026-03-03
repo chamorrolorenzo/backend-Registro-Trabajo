@@ -1,5 +1,25 @@
 import Hour from "../models/Hour.js";
 import { hourSchema } from "../schemas/hour.schema.js";
+/**
+ * Helpers: Argentina day (00:00) without parsing locale strings
+ */
+const getArgentinaDayStart = (baseDate = new Date()) => {
+    const parts = new Intl.DateTimeFormat("en-CA", {
+        timeZone: "America/Argentina/Buenos_Aires",
+        year: "numeric",
+        month: "2-digit",
+        day: "2-digit",
+    }).formatToParts(baseDate);
+    const y = Number(parts.find((p) => p.type === "year").value);
+    const m = Number(parts.find((p) => p.type === "month").value);
+    const d = Number(parts.find((p) => p.type === "day").value);
+    return new Date(y, m - 1, d); // local date at 00:00
+};
+const parseLocalYMD = (ymd) => {
+    // "YYYY-MM-DD" -> local Date at 00:00 (prevents UTC day shift)
+    const [y, m, d] = ymd.split("-").map(Number);
+    return new Date(y, m - 1, d);
+};
 /* GET HOURS */
 export const getHours = async (req, res, next) => {
     try {
@@ -10,16 +30,17 @@ export const getHours = async (req, res, next) => {
         };
         // Filtro por rango de fechas
         if (from && to && typeof from === "string" && typeof to === "string") {
-            filter.date = {
-                $gte: new Date(from),
-                $lte: new Date(to),
-            };
+            // If from/to are "YYYY-MM-DD", use parseLocalYMD to avoid timezone shifts
+            const fromDate = /^\d{4}-\d{2}-\d{2}$/.test(from) ? parseLocalYMD(from) : new Date(from);
+            const toDate = /^\d{4}-\d{2}-\d{2}$/.test(to) ? parseLocalYMD(to) : new Date(to);
+            filter.date = { $gte: fromDate, $lte: toDate };
         }
         // Filtro opcional por username
         if (username && typeof username === "string") {
             filter.username = new RegExp(username, "i");
         }
-        const hours = await Hour.find(filter).sort({ date: -1 });
+        // Most recent first
+        const hours = await Hour.find(filter).sort({ entryTime: -1 });
         res.json(hours);
     }
     catch (error) {
@@ -36,10 +57,14 @@ export const createHour = async (req, res, next) => {
             });
         }
         const { date, entryTime, exitTime, totalMinutes } = parsed.data;
+        // If "date" comes as "YYYY-MM-DD" (string), normalize to local day start
+        const normalizedDate = typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date)
+            ? parseLocalYMD(date)
+            : date;
         const hour = await Hour.create({
             userId: req.user.id,
             companyId: req.user.companyId,
-            date,
+            date: normalizedDate,
             entryTime,
             exitTime: exitTime ?? null,
             totalMinutes: totalMinutes ?? 0,
@@ -89,16 +114,12 @@ export const entryHour = async (req, res, next) => {
             return;
         }
         const now = new Date();
-        // ⭐ convertir a horario Argentina
-        const argentinaNow = new Date(now.toLocaleString("en-US", {
-            timeZone: "America/Argentina/Buenos_Aires",
-        }));
-        const date = new Date(argentinaNow.getFullYear(), argentinaNow.getMonth(), argentinaNow.getDate());
+        const date = getArgentinaDayStart(now);
         const hour = await Hour.create({
             userId: req.user.id,
             companyId: req.user.companyId,
-            date,
-            entryTime: now,
+            date, // day bucket (02/03/2029)
+            entryTime: now, // exact time (06:30)
             exitTime: null,
             totalMinutes: 0,
         });
@@ -121,7 +142,7 @@ export const exitHour = async (req, res, next) => {
         }
         const now = new Date();
         open.exitTime = now;
-        open.totalMinutes = Math.floor((now.getTime() - open.entryTime.getTime()) / 60000);
+        open.totalMinutes = Math.max(0, Math.floor((now.getTime() - open.entryTime.getTime()) / 60000));
         await open.save();
         res.json(open);
     }
@@ -129,14 +150,14 @@ export const exitHour = async (req, res, next) => {
         next(error);
     }
 };
-export const getHoursStatus = async (req, res, next) => {
+/* STATUS (si hay entrada/salida hoy) */
+export const getHoursStatus = async (req, res) => {
     try {
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayArgentina = getArgentinaDayStart(new Date());
         const record = await Hour.findOne({
             userId: req.user.id,
             companyId: req.user.companyId,
-            date: { $gte: today },
+            date: { $gte: todayArgentina },
         });
         res.json({
             hasEntry: !!record?.entryTime,
@@ -147,7 +168,7 @@ export const getHoursStatus = async (req, res, next) => {
         console.error("GET HOURS STATUS ERROR:", error);
         res.status(500).json({
             message: "Error getting hours status",
-            error: error?.message
+            error: error?.message,
         });
     }
 };

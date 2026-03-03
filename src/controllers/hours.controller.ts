@@ -2,8 +2,36 @@ import Hour from "../models/Hour.js";
 import { Request, Response, NextFunction } from "express";
 import { hourSchema } from "../schemas/hour.schema.js";
 
+/**
+ * Helpers: Argentina day (00:00) without parsing locale strings
+ */
+const getArgentinaDayStart = (baseDate: Date = new Date()) => {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(baseDate);
+
+  const y = Number(parts.find((p) => p.type === "year")!.value);
+  const m = Number(parts.find((p) => p.type === "month")!.value);
+  const d = Number(parts.find((p) => p.type === "day")!.value);
+
+  return new Date(y, m - 1, d); // local date at 00:00
+};
+
+const parseLocalYMD = (ymd: string) => {
+  // "YYYY-MM-DD" -> local Date at 00:00 (prevents UTC day shift)
+  const [y, m, d] = ymd.split("-").map(Number);
+  return new Date(y, m - 1, d);
+};
+
 /* GET HOURS */
-export const getHours = async (req: Request, res: Response, next: NextFunction) => {
+export const getHours = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const { from, to, username } = req.query;
 
@@ -14,10 +42,13 @@ export const getHours = async (req: Request, res: Response, next: NextFunction) 
 
     // Filtro por rango de fechas
     if (from && to && typeof from === "string" && typeof to === "string") {
-      filter.date = {
-        $gte: new Date(from),
-        $lte: new Date(to),
-      };
+      // If from/to are "YYYY-MM-DD", use parseLocalYMD to avoid timezone shifts
+      const fromDate =
+        /^\d{4}-\d{2}-\d{2}$/.test(from) ? parseLocalYMD(from) : new Date(from);
+      const toDate =
+        /^\d{4}-\d{2}-\d{2}$/.test(to) ? parseLocalYMD(to) : new Date(to);
+
+      filter.date = { $gte: fromDate, $lte: toDate };
     }
 
     // Filtro opcional por username
@@ -25,7 +56,8 @@ export const getHours = async (req: Request, res: Response, next: NextFunction) 
       filter.username = new RegExp(username, "i");
     }
 
-    const hours = await Hour.find(filter).sort({ date: -1 });
+    // Most recent first
+    const hours = await Hour.find(filter).sort({ entryTime: -1 });
 
     res.json(hours);
   } catch (error) {
@@ -34,8 +66,11 @@ export const getHours = async (req: Request, res: Response, next: NextFunction) 
 };
 
 /* CRUD MANUAL */
-
-export const createHour = async (req: Request, res: Response, next: NextFunction) => {
+export const createHour = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   try {
     const parsed = hourSchema.safeParse(req.body);
 
@@ -47,10 +82,16 @@ export const createHour = async (req: Request, res: Response, next: NextFunction
 
     const { date, entryTime, exitTime, totalMinutes } = parsed.data;
 
+    // If "date" comes as "YYYY-MM-DD" (string), normalize to local day start
+    const normalizedDate =
+      typeof (date as any) === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date as any)
+        ? parseLocalYMD(date as any)
+        : (date as any);
+
     const hour = await Hour.create({
       userId: req.user!.id,
       companyId: req.user!.companyId,
-      date,
+      date: normalizedDate,
       entryTime,
       exitTime: exitTime ?? null,
       totalMinutes: totalMinutes ?? 0,
@@ -75,8 +116,8 @@ export const updateHour = async (
     }
 
     // Seguridad
-    delete req.body.userId;
-    delete req.body.companyId;
+    delete (req.body as any).userId;
+    delete (req.body as any).companyId;
 
     Object.assign(hour, req.body);
     await hour.save();
@@ -100,8 +141,6 @@ export const deleteHour = async (
   }
 };
 
-
-
 /* ENTRADA AUTOMÁTICA */
 export const entryHour = async (
   req: Request,
@@ -120,32 +159,19 @@ export const entryHour = async (
       return;
     }
 
-   const now = new Date();
-
-    // ⭐ convertir a horario Argentina
-    const argentinaNow = new Date(
-      now.toLocaleString("en-US", {
-        timeZone: "America/Argentina/Buenos_Aires",
-      })
-    );
-
-    const date = new Date(
-      argentinaNow.getFullYear(),
-      argentinaNow.getMonth(),
-      argentinaNow.getDate()
-    );
+    const now = new Date();
+    const date = getArgentinaDayStart(now);
 
     const hour = await Hour.create({
       userId: req.user!.id,
       companyId: req.user!.companyId,
-      date,
-      entryTime: now,
+      date,            // day bucket (02/03/2029)
+      entryTime: now,  // exact time (06:30)
       exitTime: null,
       totalMinutes: 0,
     });
 
     res.status(201).json(hour);
-
   } catch (error) {
     next(error);
   }
@@ -171,8 +197,9 @@ export const exitHour = async (
     const now = new Date();
 
     open.exitTime = now;
-    open.totalMinutes = Math.floor(
-      (now.getTime() - open.entryTime.getTime()) / 60000
+    open.totalMinutes = Math.max(
+      0,
+      Math.floor((now.getTime() - open.entryTime.getTime()) / 60000)
     );
 
     await open.save();
@@ -182,31 +209,32 @@ export const exitHour = async (
     next(error);
   }
 };
-export const getHoursStatus = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
+
+/* STATUS (si hay entrada/salida hoy) */
+export const getHoursStatus = async (req: Request, res: Response) => {
   try {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const todayArgentina = getArgentinaDayStart(new Date());
 
     const record = await Hour.findOne({
-      userId: (req as any).user.id,
-      companyId: (req as any).user.companyId,
-      date: { $gte: today },
+      userId: req.user!.id,
+      companyId: req.user!.companyId,
+      date: { $gte: todayArgentina },
     });
 
     res.json({
       hasEntry: !!record?.entryTime,
       hasExit: !!record?.exitTime,
     });
+ } catch (error: unknown) {
+  console.error("GET HOURS STATUS ERROR:", error);
 
-  } catch (error) {
-    console.error("GET HOURS STATUS ERROR:", error);
-    res.status(500).json({
-      message: "Error getting hours status",
-      error: (error as any)?.message
-    });
-  }
+  const message =
+    error instanceof Error ? error.message : String(error);
+
+  res.status(500).json({
+    message: "Error getting hours status",
+    error: message,
+  });
 }
+  
+};
