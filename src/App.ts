@@ -11,6 +11,9 @@ import exportsRoutes from "./routes/exports.routes.js";
 import summaryRoutes from "./routes/summary.routes.js";
 import { Request, Response, NextFunction } from "express";
 
+// src/index.ts (o app.ts / server.ts) -> donde montás rutas
+
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);

@@ -1,0 +1,163 @@
+// src/services/exports/pdf.service.ts
+import PDFDocument from "pdfkit";
+
+type Doc = InstanceType<typeof PDFDocument>;
+
+type PdfTextRow = { label: string; value: string };
+
+const formatARDate = (d: Date): string =>
+  new Intl.DateTimeFormat("es-AR", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(d);
+
+const formatARTime = (d: Date): string =>
+  new Intl.DateTimeFormat("es-AR", {
+    timeZone: "America/Argentina/Buenos_Aires",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(d);
+
+const toBuffer = (doc: Doc): Promise<Buffer> =>
+  new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    doc.on("data", (c) => chunks.push(Buffer.isBuffer(c) ? c : Buffer.from(c)));
+    doc.on("end", () => resolve(Buffer.concat(chunks)));
+    doc.on("error", reject);
+    doc.end();
+  });
+
+const hr = (doc: Doc) => {
+  const y = doc.y;
+  doc
+    .moveTo(doc.page.margins.left, y)
+    .lineTo(doc.page.width - doc.page.margins.right, y)
+    .stroke();
+};
+
+const header = (doc: Doc, title: string, meta: PdfTextRow[]) => {
+  doc.fontSize(18).text(title, { align: "left" });
+  doc.moveDown(0.5);
+
+  doc.fontSize(10);
+  for (const m of meta) doc.text(`${m.label}: ${m.value}`);
+
+  doc.moveDown(0.8);
+  hr(doc);
+  doc.moveDown(1);
+};
+
+const tableHeader = (doc: Doc, cols: string[]) => {
+  doc.fontSize(10).font("Helvetica-Bold").text(cols.join("   |   "));
+  doc.font("Helvetica").moveDown(0.5);
+};
+
+export type HourPdfRow = {
+  entryTime: Date;
+  exitTime: Date | null;
+  totalMinutes: number;
+};
+
+export type TripPdfRow = {
+  date: Date;
+  remito: string;
+  cubicMeters: number;
+};
+
+export const buildHoursPdf = async (opts: {
+  companyName: string;
+  username: string;
+  monthLabel: string; // ej "marzo 2026"
+  rows: HourPdfRow[];
+}): Promise<Buffer> => {
+  const doc = new PDFDocument({ size: "A4", margin: 48 });
+
+  header(doc, "Reporte de Horas", [
+    { label: "Empresa", value: opts.companyName },
+    { label: "Usuario", value: opts.username },
+    { label: "Mes", value: opts.monthLabel },
+    { label: "Generado", value: `${formatARDate(new Date())} ${formatARTime(new Date())}` },
+  ]);
+
+  tableHeader(doc, ["Fecha", "Entrada", "Salida", "Hs", "Extras"]);
+
+  let totalMin = 0;
+  let extraMin = 0;
+
+  doc.fontSize(10);
+
+  for (const r of opts.rows) {
+    const entry = r.entryTime;
+    const exit = r.exitTime;
+
+    const minutes = Math.max(0, r.totalMinutes || 0);
+    totalMin += minutes;
+
+    const extras = Math.max(0, minutes - 8 * 60);
+    extraMin += extras;
+
+    doc.text(
+      [
+        formatARDate(entry),
+        formatARTime(entry),
+        exit ? formatARTime(exit) : "—",
+        (minutes / 60).toFixed(2),
+        extras > 0 ? `+${(extras / 60).toFixed(2)}` : "—",
+      ].join("   |   ")
+    );
+
+    if (doc.y > doc.page.height - 80) doc.addPage();
+  }
+
+  doc.moveDown(1);
+  hr(doc);
+  doc.moveDown(0.7);
+
+  doc.font("Helvetica-Bold").text("Totales");
+  doc.font("Helvetica");
+  doc.text(`Horas: ${(totalMin / 60).toFixed(2)} hs`);
+  doc.text(`Extras: +${(extraMin / 60).toFixed(2)} hs`);
+
+  return toBuffer(doc);
+};
+
+export const buildTripsPdf = async (opts: {
+  companyName: string;
+  username: string;
+  monthLabel: string;
+  rows: TripPdfRow[];
+}): Promise<Buffer> => {
+  const doc = new PDFDocument({ size: "A4", margin: 48 });
+
+  header(doc, "Reporte de Viajes", [
+    { label: "Empresa", value: opts.companyName },
+    { label: "Usuario", value: opts.username },
+    { label: "Mes", value: opts.monthLabel },
+    { label: "Generado", value: `${formatARDate(new Date())} ${formatARTime(new Date())}` },
+  ]);
+
+  tableHeader(doc, ["Fecha", "Remito", "M³"]);
+
+  let totalM3 = 0;
+  doc.fontSize(10);
+
+  for (const r of opts.rows) {
+    totalM3 += Number(r.cubicMeters || 0);
+
+    doc.text([formatARDate(r.date), r.remito, String(r.cubicMeters)].join("   |   "));
+
+    if (doc.y > doc.page.height - 80) doc.addPage();
+  }
+
+  doc.moveDown(1);
+  hr(doc);
+  doc.moveDown(0.7);
+
+  doc.font("Helvetica-Bold").text("Totales");
+  doc.font("Helvetica");
+  doc.text(`M³: ${totalM3.toFixed(2)}`);
+
+  return toBuffer(doc);
+};
