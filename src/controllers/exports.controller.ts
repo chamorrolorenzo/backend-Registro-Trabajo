@@ -1,10 +1,15 @@
-import type { Response } from "express";
-import type { Request } from "express";
+import type { Request, Response } from "express";
 import Hour from "../models/Hour.js";
 import Trip from "../models/Trip.js";
 import { buildHoursPdf, buildTripsPdf } from "../services/exports/pdf.service.js";
 
-type AuthUser = { id: string; companyId: string; username?: string; companyName?: string };
+type AuthUser = {
+  id: string;
+  companyId: string;
+  username?: string;
+  companyName?: string;
+};
+
 type AuthRequest = Request & { user?: AuthUser };
 
 const requireUser = (req: AuthRequest, res: Response): AuthUser | null => {
@@ -14,6 +19,10 @@ const requireUser = (req: AuthRequest, res: Response): AuthUser | null => {
   }
   return req.user;
 };
+
+/* =========================================
+   PDF HORAS
+========================================= */
 
 export const downloadHoursPdf = async (req: AuthRequest, res: Response) => {
   const user = requireUser(req, res);
@@ -53,9 +62,17 @@ export const downloadHoursPdf = async (req: AuthRequest, res: Response) => {
   });
 
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename="horas-${month}-${year}.pdf"`);
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="horas-${month}-${year}.pdf"`
+  );
+
   res.send(pdf);
 };
+
+/* =========================================
+   PDF VIAJES
+========================================= */
 
 export const downloadTripsPdf = async (req: AuthRequest, res: Response) => {
   const user = requireUser(req, res);
@@ -95,6 +112,10 @@ export const downloadTripsPdf = async (req: AuthRequest, res: Response) => {
   });
 
   res.setHeader("Content-Type", "application/pdf");
-  res.setHeader("Content-Disposition", `attachment; filename="viajes-${month}-${year}.pdf"`);
+  res.setHeader(
+    "Content-Disposition",
+    `attachment; filename="viajes-${month}-${year}.pdf"`
+  );
+
   res.send(pdf);
 };
