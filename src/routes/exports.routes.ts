@@ -4,7 +4,7 @@ import { downloadHoursPdf, downloadTripsPdf } from "../controllers/exports.contr
 
 const router = Router();
 
-router.get("/exports/hours", authMiddleware, downloadHoursPdf);
-router.get("/exports/trips", authMiddleware, downloadTripsPdf);
+router.get("/hours", authMiddleware, downloadHoursPdf);
+router.get("/trips", authMiddleware, downloadTripsPdf);
 
 export default router;
