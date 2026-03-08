@@ -17,6 +17,7 @@ const authMiddleware = async (req, res, next) => {
             id: user._id.toString(),
             role: user.role,
             companyId: user.companyId.toString(),
+            username: `${user.nombre} ${user.apellido}`,
         };
         next();
     }

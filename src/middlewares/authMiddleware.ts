@@ -21,12 +21,13 @@ const authMiddleware = async (req: Request, res: Response, next: NextFunction) =
     }
 
     // Identidad normalizada
-    req.user = {
-      id: user._id.toString(),
-      role: user.role,
-      companyId: user.companyId!.toString(),
-    };
-
+   req.user = {
+  id: user._id.toString(),
+  role: user.role,
+  companyId: user.companyId!.toString(),
+  username: `${user.nombre} ${user.apellido}`,
+};
+   
     next();
   } catch (error) {
     return res.status(401).json({ message: "Token inválido" });
