@@ -2,7 +2,7 @@ import Hour from "../models/Hour.js";
 import type { Request, Response, NextFunction } from "express";
 import { hourSchema } from "../schemas/hour.schema.js";
 
-import { autoCloseOpenHoursForUser } from "../services/autoCloseHours";
+import { autoCloseOpenHoursForUser } from "../services/autoCloseHours.js";
 
 /**
  * Bucket Argentina:
