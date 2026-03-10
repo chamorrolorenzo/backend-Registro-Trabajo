@@ -24,7 +24,9 @@ const getUserAndCompany = async (userId, companyId) => {
     const dbUser = await User.findById(userId);
     const company = await Company.findById(companyId);
     const username = `${dbUser?.nombre ?? ""} ${dbUser?.apellido ?? ""}`.trim() || "Usuario";
-    const companyName = company?.name ?? "Empresa";
+    const companyName = company?.name
+        ? company.name.charAt(0).toUpperCase() + company.name.slice(1)
+        : "Empresa";
     return { username, companyName };
 };
 export const downloadHoursPdf = async (req, res) => {
