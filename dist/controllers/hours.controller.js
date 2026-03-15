@@ -1,5 +1,6 @@
 import Hour from "../models/Hour.js";
 import { hourSchema } from "../schemas/hour.schema.js";
+import { autoCloseOpenHoursForUser } from "../services/autoCloseHours.js";
 /**
  * Bucket Argentina:
  * guardamos inicio del día ARG como 03:00Z (00:00 ARG).
@@ -44,6 +45,7 @@ export const getHours = async (req, res, next) => {
         const user = requireUser(req, res);
         if (!user)
             return;
+        await autoCloseOpenHoursForUser(user.id, user.companyId);
         const { from, to, username } = req.query;
         const filter = {
             userId: user.id,
@@ -74,6 +76,7 @@ export const createHour = async (req, res, next) => {
         const user = requireUser(req, res);
         if (!user)
             return;
+        await autoCloseOpenHoursForUser(user.id, user.companyId);
         const parsed = hourSchema.safeParse(req.body);
         if (!parsed.success) {
             return res.status(400).json({
@@ -103,6 +106,7 @@ export const updateHour = async (req, res, next) => {
         const user = requireUser(req, res);
         if (!user)
             return;
+        await autoCloseOpenHoursForUser(user.id, user.companyId);
         const hour = await Hour.findOne({
             _id: req.params.id,
             userId: user.id,
