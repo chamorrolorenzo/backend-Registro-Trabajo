@@ -13,11 +13,24 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const app = express();
 /* Middlewares */
-app.use(cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+const ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "https://frontend-registro-trabajo.vercel.app",
+];
+const corsOptions = {
+    origin: function (origin, callback) {
+        if (!origin || ALLOWED_ORIGINS.includes(origin)) {
+            callback(null, true);
+        }
+        else {
+            callback(new Error("Not allowed by CORS"));
+        }
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-}));
+};
+app.use(cors(corsOptions));
 app.use(express.json());
 /* ---- Rutas públicas ---- */
 app.use("/auth", authRoutes);
