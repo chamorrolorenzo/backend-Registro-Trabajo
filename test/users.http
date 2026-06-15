@@ -11,20 +11,11 @@ Content-Type: application/json
   "empresa": "Vial Jaime"
 }
 
-### Users - Get All
-GET http://localhost:3002/auth/users
-Authorization: Bearer TU_TOKEN
-Content-Type: application/json
-
-### Users - Update
-PUT http://localhost:3002/auth/users/ _ID
-Authorization: Bearer TU_TOKEN
+### Users - Login
+POST http://localhost:3002/auth/login
 Content-Type: application/json
 
 {
-  "role": "ADMIN"
+  "username": "juanperez",
+  "password": "1234"
 }
-
-### Users - Delete
-DELETE http://localhost:3002/auth/users/ _ID
-Authorization: Bearer TU_TOKEN

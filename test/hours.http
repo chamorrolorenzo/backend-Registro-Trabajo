@@ -1,6 +1,6 @@
 ### Hours - Create
 POST http://localhost:3002/hours
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5N2ZhN2IyNGYzODMwYzBkOTk5OGE4ZCIsInJvbGUiOiJFTVBMT1lFRSIsImNvbXBhbnlJZCI6IjY5N2ZhMWI1MjQ2ODM4MmM1MjRiNzU0MiIsImlhdCI6MTc3MTcxMTE4NCwiZXhwIjoxNzcxNzk3NTg0fQ.cy3WkkGZ_rhYEXUaYcFmJ_P7hHK3Vi5QDZj-xpkMWyI
+Authorization: Bearer TU_TOKEN
 Content-Type: application/json
 
 {
@@ -13,15 +13,15 @@ Content-Type: application/json
 
 ### Hours - Get All
 GET http://localhost:3002/hours
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5N2ZhN2IyNGYzODMwYzBkOTk5OGE4ZCIsInJvbGUiOiJFTVBMT1lFRSIsImNvbXBhbnlJZCI6IjY5N2ZhMWI1MjQ2ODM4MmM1MjRiNzU0MiIsImlhdCI6MTc3MTcxMTE4NCwiZXhwIjoxNzcxNzk3NTg0fQ.cy3WkkGZ_rhYEXUaYcFmJ_P7hHK3Vi5QDZj-xpkMWyI
+Authorization: Bearer TU_TOKEN
 Content-Type: application/json
 
 
 ###
 
 ### Hours - Update
-PATCH http://localhost:3002/hours/699a435a1b487c69e7199d4f
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5N2ZhN2IyNGYzODMwYzBkOTk5OGE4ZCIsInJvbGUiOiJFTVBMT1lFRSIsImNvbXBhbnlJZCI6IjY5N2ZhMWI1MjQ2ODM4MmM1MjRiNzU0MiIsImlhdCI6MTc3MTcxMTE4NCwiZXhwIjoxNzcxNzk3NTg0fQ.cy3WkkGZ_rhYEXUaYcFmJ_P7hHK3Vi5QDZj-xpkMWyI
+PATCH http://localhost:3002/hours/_ID
+Authorization: Bearer TU_TOKEN
 Content-Type: application/json
 
 
@@ -32,6 +32,6 @@ Content-Type: application/json
 ###
 
 ### Hours - Delete
-DELETE http://localhost:3002/hours/699a435a1b487c69e7199d4f
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY5N2ZhN2IyNGYzODMwYzBkOTk5OGE4ZCIsInJvbGUiOiJFTVBMT1lFRSIsImNvbXBhbnlJZCI6IjY5N2ZhMWI1MjQ2ODM4MmM1MjRiNzU0MiIsImlhdCI6MTc3MTcxMTE4NCwiZXhwIjoxNzcxNzk3NTg0fQ.cy3WkkGZ_rhYEXUaYcFmJ_P7hHK3Vi5QDZj-xpkMWyI
+DELETE http://localhost:3002/hours/_ID
+Authorization: Bearer TU_TOKEN
 Content-Type: application/json

@@ -13,7 +13,7 @@ GET http://localhost:3002/trips
 Authorization: Bearer TU_TOKEN
 
 ### Trips - Update
-PATCH http://localhost:3002/trips/ TU _ID
+PATCH http://localhost:3002/trips/_ID
 Content-Type: application/json
 Authorization: Bearer TU_TOKEN
 {
@@ -21,5 +21,5 @@ Authorization: Bearer TU_TOKEN
 }
 
 ### Trips - Delete
-DELETE http://localhost:3002/trips/ TU _ID
+DELETE http://localhost:3002/trips/_ID
 Authorization: Bearer TU_TOKEN
